@@ -1,4 +1,9 @@
 ```
+    AvailabilityZone: !Select [ 0, !GetAZs ]
+        
+        or
+    
+    AvailabilityZone:  
         Fn::Select: 
           - 0
           - Fn::GetAZs: "" 
