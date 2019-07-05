@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: 2010-09-09
+# This CloudFormation template deploys a subnet to a VPC
+Parameters:
+  pCidrBlock:
+    Type: String
+  pVpcId:
+    Type: String
+  pAvailabilityZone:
+    Type: String
+Resources:    

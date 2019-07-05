@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: 2010-09-09
+# This CloudFormation template deploys a basic VPC with an attached/reachable IGW 
+
+Parameters:
+  pVPCCidrBlock: 
+    Type: String
+    Default: 10.1.0.0/16
+  pSubnetCidrBlock:
+    Type: String
+    Default: 10.1.0.0/24
+
+Resources:
+  
+  # step 1: create the VPC
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref pVPCCidrBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  # step 2: create the internet gateway and attachment
+  # Notice how you can't attach an IGW to a VPC unless both are created
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    DependsOn: VPC
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+      
+  # step 3: create a routing table
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+  
+  # step 4: create a routing table route for the public gateway
+  PublicRoute1:   # Public route table has direct routing to IGW:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  
+  # step 5 create a subnet
+  Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref pSubnetCidrBlock
+      MapPublicIpOnLaunch: true
+      # See this directories Readme for info on how this section works
+      AvailabilityZone: !Select [ 0, !GetAZs ]
