@@ -39,7 +39,7 @@ Resources:
       Source: 
         # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-source.html
         Type: GITHUB_ENTERPRISE
-        Location: https://{personal-access-token}@github.dxc.com/nkiermaier/deploy.git
+        Location: !Ref pGitHubUrl
         # runtime-versions is required if using the base aws image: aws/codebuild/standard:2.0
         # https://docs.aws.amazon.com/codebuild/latest/userguide/troubleshooting.html#troubleshooting-build-must-specify-runtime
         # runtimes are build on the fly
