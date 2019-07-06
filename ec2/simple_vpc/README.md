@@ -12,6 +12,8 @@
         * This template ups that to 50gig via the ```BlockDeviceMappings``` parameter.
     2. The Instance is also automatically given a public I.P. addy due to the subnet setting: 
         * ```MapPublicIpOnLaunch: true```
+    3. The UserData section allows scripts to be run at start up. 
+        * Add custom build scripts here. 
     
 
 ### Finding AMI images
