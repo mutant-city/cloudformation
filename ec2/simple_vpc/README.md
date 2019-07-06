@@ -1,3 +1,28 @@
+### Build a simple publicly accessible VPC to spin up instances.
+
+* To use:
+    1. Spin up main vpc_with_igw_and_subnet.yaml stack
+        * ```aws cloudformation create-stack --stack-name public-vpc --template-body file://vpc_with_igw_and_public_subnet.yaml```
+        * note: default VPC in the 10/16 block/ Subnet in 10/24 block
+    2. Add an simple_ec2_instance.yaml after the VPC is created 
+        *  ``` aws cloudformation create-stack --stack-name nickk-ec2-2 --template-body file://simple_ec2_instance.yaml --parameters file://parameters.json ```
+
+* Notes:  The default size of attached disks (ebs volume) inside of AWS is 8gb.  
+    * This template ups that to 50gig via the BlockDeviceMappings parameter.
+    
+
+### Finding AMI images
+* https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html
+* https://cloud-images.ubuntu.com/locator/ec2/
+* you can look into the ec2 console as well under the AMI section
+
+
+#### Interesting References
+* https://www.infoq.com/articles/aws-vpc-cloudformation/
+* all of the AWS cloudformation docs for these resources
+
+#### Gotchas
+1.
 ```
     AvailabilityZone: !Select [ 0, !GetAZs ]
         

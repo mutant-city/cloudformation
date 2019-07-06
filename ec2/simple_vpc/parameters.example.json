@@ -1,0 +1,18 @@
+[
+  {
+    "ParameterKey": "SubnetId",
+    "ParameterValue": "subnet-7974271d"
+  },
+  {
+    "ParameterKey": "SSHKeyName",
+    "ParameterValue": "my-ssh"
+  },
+  {
+    "ParameterKey": "ImageId",
+    "ParameterValue": "ami-068670db424b01e9a"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.medium"
+  }
+]
