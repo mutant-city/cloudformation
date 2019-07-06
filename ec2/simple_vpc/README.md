@@ -22,6 +22,7 @@
 
 #### Interesting References
 * https://www.infoq.com/articles/aws-vpc-cloudformation/
+* http://derpturkey.com/ec2-cloudformation-example/
 * all of the AWS cloudformation docs for these resources
 
 #### Gotchas

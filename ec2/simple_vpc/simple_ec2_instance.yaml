@@ -41,6 +41,17 @@ Parameters:
     AllowedValues: [100, 200, 500, 1000]
     
 Resources:
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow ssh
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
   EC2Example:
     Type: "AWS::EC2::Instance"
     Properties:
@@ -48,6 +59,8 @@ Resources:
       ImageId: !Ref ImageId
       InstanceType: !Ref InstanceType
       KeyName: !Ref SSHKeyName
+      SecurityGroupIds:
+        - !GetAtt InstanceSecurityGroup.GroupId
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -55,3 +68,11 @@ Resources:
             Iops: !Ref IOPS
             DeleteOnTermination: false
             VolumeSize: !Ref VolumeSize
+      UserData:
+        Fn::Base64:
+          !Sub |
+          #!/bin/bash -xe
+          sudo apt update -y
+          sudo apt upgrade -y
+          
+          
