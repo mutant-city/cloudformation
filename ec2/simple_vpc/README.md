@@ -5,10 +5,13 @@
         * ```aws cloudformation create-stack --stack-name public-vpc --template-body file://vpc_with_igw_and_public_subnet.yaml```
         * note: default VPC in the 10/16 block/ Subnet in 10/24 block
     2. Add an simple_ec2_instance.yaml after the VPC is created 
-        *  ``` aws cloudformation create-stack --stack-name nickk-ec2-2 --template-body file://simple_ec2_instance.yaml --parameters file://parameters.json ```
+        *  ```aws cloudformation create-stack --stack-name nickk-ec2-2 --template-body file://simple_ec2_instance.yaml --parameters file://parameters.json ```
 
-* Notes:  The default size of attached disks (ebs volume) inside of AWS is 8gb.  
-    * This template ups that to 50gig via the BlockDeviceMappings parameter.
+* Notes:  
+    1. The default size of attached disks (ebs volume) inside of AWS is 8gb.  
+        * This template ups that to 50gig via the ```BlockDeviceMappings``` parameter.
+    2. The Instance is also automatically given a public I.P. addy due to the subnet setting: 
+        * ```MapPublicIpOnLaunch: true```
     
 
 ### Finding AMI images
