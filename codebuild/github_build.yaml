@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "Generic CF Template to deploy an app"
+Description: "Generic CF Template to deploy an app via Github"
 
 Parameters:
   pGitHubUrl:
