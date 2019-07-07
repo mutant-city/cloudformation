@@ -1,12 +1,21 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "Generic CF Template to deploy an app via Github"
+Description: "Generic CF Template to deploy an app via CodeCommit"
 
 Parameters:
-  pGitHubUrl:
+  CodeCommitHttpsUrl:
     Type: String
-    Description: Github Url to pull down a repo for the build spec to operate upon
-    
+    Description: The Https url of a code commit repository
+  ProjectName:
+    Type: String
+    Description: Name of the project
+    Default: CodeBuildProject
+  ProjectDescription:
+    Type: String
+    Description: General description of the project
+    Default: CodeBuild Project
+
 Resources:  
+  
   rIamBuildProjectSourceRole:
     Description: TBI
     Type: AWS::IAM::Role
@@ -28,35 +37,13 @@ Resources:
                   - 'logs:*'
                 Effect: Allow
                 Resource: '*' 
-                
-  rBuildProject:
-    Type: AWS::CodeBuild::Project 
-    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-codebuild-project.html
+               
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
     Properties:
-      Name: CodeBuildTheApp
-      Description: Deployment resource for codebuild pipeline
-      ServiceRole:  !Ref rIamBuildProjectSourceRole
-      Source: 
-        # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-source.html
-        Type: GITHUB_ENTERPRISE
-        Location: !Ref pGitHubUrl
-        # runtime-versions is required if using the base aws image: aws/codebuild/standard:2.0
-        # https://docs.aws.amazon.com/codebuild/latest/userguide/troubleshooting.html#troubleshooting-build-must-specify-runtime
-        # runtimes are build on the fly
-        BuildSpec: |
-          version: 0.2
-          phases:
-            install:
-              runtime-versions:
-                python: 3.7
-              commands:
-                - echo "Hello World from install."
-            build:
-              commands:
-                - echo "Hello World from build."
-            post_build:
-              commands:
-                - echo "Hello World from post_build."
+      Name: !Ref ProjectName
+      Description: !Ref ProjectDescription
+      ServiceRole: !Ref rIamBuildProjectSourceRole
       Artifacts:
         # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
         Type: NO_ARTIFACTS
@@ -69,13 +56,18 @@ Resources:
           -
             Name: TEST_ENV_VARIABLE
             Value: PlaceHolder
-      # only trigger on PR merged into master
-      # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-projecttriggers.html
+      Source:
+        Type: CODECOMMIT
+        Location: !Ref CodeCommitHttpsUrl
       Triggers:
         Webhook: true
         FilterGroups:
-          - Type: EVENT
-            Pattern: PULL_REQUEST_MERGED
-          - Type: BASE_REF
-            Pattern: ^refs/heads/master$
-            ExcludeMatchedPattern: false
+          - - Type: EVENT
+              Pattern: PULL_REQUEST_MERGED
+            - Type: BASE_REF
+              Pattern: ^refs/heads/master$
+              ExcludeMatchedPattern: false
+      TimeoutInMinutes: 5
+               
+               
+  
