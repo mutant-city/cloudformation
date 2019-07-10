@@ -37,6 +37,7 @@ Resources:
       Description: Deployment resource for codebuild pipeline
       ServiceRole:  !Ref rIamBuildProjectSourceRole
       Source: 
+        InsecureSsl: True
         # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-source.html
         Type: GITHUB_ENTERPRISE
         Location: !Ref pGitHubUrl
