@@ -59,15 +59,7 @@ Resources:
       Source:
         Type: CODECOMMIT
         Location: !Ref CodeCommitHttpsUrl
-      Triggers:
-        Webhook: true
-        FilterGroups:
-          - - Type: EVENT
-              Pattern: PULL_REQUEST_MERGED
-            - Type: BASE_REF
-              Pattern: ^refs/heads/master$
-              ExcludeMatchedPattern: false
-      TimeoutInMinutes: 5
-               
+
+
                
   

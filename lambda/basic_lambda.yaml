@@ -1,0 +1,48 @@
+rBasicLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+      Policies:
+        - PolicyName: customPermission
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:GetLogEvents
+                  - logs:PutLogEvents
+                Resource:
+                  - arn:aws:logs:*:*:*
+
+  rBasicLambdaFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: rBasicLambdaRole
+    Properties:
+      Handler: index.lambda_handler
+      Role: !Sub "${rBasicLambdaRole.Arn}"
+      Code:
+        ZipFile: |
+          import cfnresponse
+          import boto3
+          def lambda_handler(event, context):
+            try:
+               # Input your code here
+            except Exception as e:
+              # Input exception code here
+
+      Runtime: python3.6
+      Timeout: '10'
+      Tags:
+      - Key: TestTag
+        Value: TestTag

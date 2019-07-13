@@ -70,3 +70,12 @@ Resources:
           -
             Name: TEST_ENV_VARIABLE
             Value: PlaceHolder
+        Triggers:
+            Webhook: true
+            FilterGroups:
+              - - Type: EVENT
+                  Pattern: PULL_REQUEST_MERGED
+                - Type: BASE_REF
+                  Pattern: ^refs/heads/master$
+                  ExcludeMatchedPattern: false
+            TimeoutInMinutes: 5
