@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Setup CodeCommit repo to Trigger a Lambda
+
+Parameters:
+  CodeCommitRepoName:
+    Type: String
+  CodeCommitRepoDescription:
+    Type: String
+    Default: CodeCommit repository
+
+Resources:
+  # LAMBDA EXECUTION ROLE
+  rCodeCommitTriggerLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      Policies:
+      - PolicyName: CloudwatchLogs
+        PolicyDocument:
+          Statement:
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:GetLogEvents
+            - logs:PutLogEvents
+            Resource:
+            - arn:aws:logs:*:*:*
+            Effect: Allow
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+  # LAMBDA
+  rCodeCommitTriggerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          import boto3
+          def lambda_handler(event, context):
+            try:
+               print("Hello World from Code Commit Lambda")
+               return True
+            except Exception as e:
+               print("Hello World from Code Commit Lambda exception")
+               return False
+      Description: Lambda to trigger CodeCommit
+      Handler: index.lambda_handler
+      Role: !GetAtt rCodeCommitTriggerLambdaExecutionRole.Arn
+      Timeout: 5
+      Runtime: python3.6
+    DependsOn: rCodeCommitTriggerLambdaExecutionRole
+    
+#  # SNS Topic and permission
+  rCodeCommitTriggerTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        -
+          Endpoint: !GetAtt rCodeCommitTriggerLambda.Arn
+          Protocol: lambda
+    DependsOn: rCodeCommitTriggerLambda
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref rCodeCommitTriggerTopic
+      FunctionName: !GetAtt rCodeCommitTriggerLambda.Arn
+
+#
+#  # CODE COMMIT REPO
+  AccountAccessRepo:
+    Type: AWS::CodeCommit::Repository
+    Properties: 
+      RepositoryDescription: !Ref CodeCommitRepoDescription
+      RepositoryName: !Ref CodeCommitRepoName
+      Triggers:
+        -  
+          Name: MasterCodeCommitTrigger
+          CustomData: !Sub '{"test":"test"}'
+          Branches:
+            - master
+          DestinationArn: !Ref rCodeCommitTriggerTopic
+          Events: 
+            - all

@@ -1,0 +1,6 @@
+[
+  {
+    "ParameterKey": "CodeCommitRepoName",
+    "ParameterValue": "test-code-commit-repo-delete-me"
+  }
+]

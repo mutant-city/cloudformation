@@ -28,6 +28,7 @@ rBasicLambdaRole:
   rBasicLambdaFunction:
     Type: AWS::Lambda::Function
     DependsOn: rBasicLambdaRole
+    Description: Basic Demo Lambda
     Properties:
       Handler: index.lambda_handler
       Role: !Sub "${rBasicLambdaRole.Arn}"
@@ -38,9 +39,10 @@ rBasicLambdaRole:
           def lambda_handler(event, context):
             try:
                # Input your code here
+              print("Hello World")
             except Exception as e:
               # Input exception code here
-
+              print("Hello World")
       Runtime: python3.6
       Timeout: '10'
       Tags:
