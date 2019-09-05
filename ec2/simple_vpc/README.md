@@ -14,7 +14,11 @@
         * ```MapPublicIpOnLaunch: true```
     3. The UserData section allows scripts to be run at start up. 
         * Add custom build scripts here. 
-    
+
+
+### To Do
+* add IG association here
+    * https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html  
 
 ### Finding AMI images
 * https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html

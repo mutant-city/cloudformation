@@ -2,6 +2,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Simple EC2 Instance'
 Parameters:
+  VpcId:
+    Description: Subnet to Attach instance.
+    Type: AWS::EC2::VPC::Id
+
   SubnetId:
     Description: Subnet to Attach instance.
     Type: AWS::EC2::Subnet::Id
@@ -45,6 +49,7 @@ Resources:
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
+      VpcId: !Ref VpcId
       GroupDescription: Allow ssh
       SecurityGroupIngress:
         - IpProtocol: tcp

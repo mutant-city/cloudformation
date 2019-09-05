@@ -1,7 +1,11 @@
 [
   {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-03558926ac835e562"
+  },
+  {
     "ParameterKey": "SubnetId",
-    "ParameterValue": "subnet-7974271d"
+    "ParameterValue": "subnet-0b8caac4d6ae2d873"
   },
   {
     "ParameterKey": "SSHKeyName",
@@ -9,7 +13,7 @@
   },
   {
     "ParameterKey": "ImageId",
-    "ParameterValue": "ami-068670db424b01e9a"
+    "ParameterValue": "ami-06358f49b5839867c"
   },
   {
     "ParameterKey": "InstanceType",
