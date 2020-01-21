@@ -73,11 +73,5 @@ Resources:
             Iops: !Ref IOPS
             DeleteOnTermination: false
             VolumeSize: !Ref VolumeSize
-      UserData:
-        Fn::Base64:
-          !Sub |
-          #!/bin/bash -xe
-          sudo apt update -y
-          sudo apt upgrade -y
           
           
