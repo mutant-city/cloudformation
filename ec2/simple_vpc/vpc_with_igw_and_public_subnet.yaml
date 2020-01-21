@@ -25,6 +25,7 @@ Resources:
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     DependsOn: VPC
+    
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -34,13 +35,14 @@ Resources:
   # step 3: create a routing table
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
+    DependsOn: AttachGateway
     Properties:
       VpcId: !Ref VPC
   
   # step 4: create a routing table route for the public gateway
   PublicRoute1:   # Public route table has direct routing to IGW:
     Type: AWS::EC2::Route
-    DependsOn: AttachGateway
+    DependsOn: PublicRouteTable
     Properties:
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
@@ -49,6 +51,7 @@ Resources:
   # step 5 create a subnet
   Subnet:
     Type: AWS::EC2::Subnet
+    DependsOn: PublicRoute1
     Properties:
       VpcId: !Ref VPC
       CidrBlock: !Ref pSubnetCidrBlock

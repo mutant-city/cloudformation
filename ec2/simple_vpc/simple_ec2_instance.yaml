@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Simple EC2 Instance'
 Parameters:
   VpcId:
-    Description: Subnet to Attach instance.
+    Description: Vpc to Attach instance.
     Type: AWS::EC2::VPC::Id
 
   SubnetId:
@@ -59,6 +59,7 @@ Resources:
 
   EC2Example:
     Type: "AWS::EC2::Instance"
+    DependsOn: InstanceSecurityGroup
     Properties:
       SubnetId: !Ref SubnetId
       ImageId: !Ref ImageId
