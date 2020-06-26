@@ -33,7 +33,7 @@ Resources:
           Effect: Allow
           Principal:
             Service:
-            - lambda.amazonaws.com
+            - Lambda.amazonaws.com
   # LAMBDA
   rCodeCommitTriggerLambda:
     Type: AWS::Lambda::Function
@@ -62,13 +62,13 @@ Resources:
       Subscription:
         -
           Endpoint: !GetAtt rCodeCommitTriggerLambda.Arn
-          Protocol: lambda
+          Protocol: Lambda
     DependsOn: rCodeCommitTriggerLambda
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      Action: lambda:InvokeFunction
+      Action: Lambda:InvokeFunction
       Principal: sns.amazonaws.com
       SourceArn: !Ref rCodeCommitTriggerTopic
       FunctionName: !GetAtt rCodeCommitTriggerLambda.Arn

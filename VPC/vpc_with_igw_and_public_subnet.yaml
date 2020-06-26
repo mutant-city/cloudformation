@@ -1,14 +1,17 @@
 AWSTemplateFormatVersion: 2010-09-09
 # This CloudFormation template deploys a basic VPC with an attached/reachable IGW 
-# Any ec2 instance launched in the subnet is publicly accessible.
+# Any EC2 instance launched in the subnet is publicly accessible.
 
 Parameters:
   pVPCCidrBlock: 
     Type: String
     Default: 10.1.0.0/16
-  pSubnetCidrBlock:
+  pSubnet1CidrBlock:
     Type: String
-    Default: 10.1.0.0/24
+    Default: 10.1.1.0/24
+  pSubnet2CidrBlock:
+    Type: String
+    Default: 10.1.2.0/24
 
 Resources:
   
@@ -49,12 +52,34 @@ Resources:
       GatewayId: !Ref InternetGateway
   
   # step 5 create a subnet
-  Subnet:
+  Subnet1:
     Type: AWS::EC2::Subnet
     DependsOn: PublicRoute1
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: !Ref pSubnetCidrBlock
+      CidrBlock: !Ref pSubnet1CidrBlock
       MapPublicIpOnLaunch: true
       # See this directories Readme for info on how this section works
       AvailabilityZone: !Select [ 0, !GetAZs ]
+
+  Subnet2:
+    Type: AWS::EC2::Subnet
+    DependsOn: PublicRoute1
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref pSubnet2CidrBlock
+      MapPublicIpOnLaunch: true
+      # See this directories Readme for info on how this section works
+      AvailabilityZone: !Select [ 1, !GetAZs ]
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref Subnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref Subnet2
+      RouteTableId: !Ref PublicRouteTable

@@ -1,0 +1,11 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Basic RDS Service'
+
+Parameters:
+  VpcId:
+    Description: Vpc to Attach RDS.
+    Type: AWS::EC2::VPC::Id
+
+
+Resources:

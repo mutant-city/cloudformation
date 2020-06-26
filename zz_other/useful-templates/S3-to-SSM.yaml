@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: CF Template to generically copy a file from S3 bucket to an SSM param
+Description: CF Template to generically copy the value from a file from S3 bucket to an SSM param
 Parameters:
   pS3BucketName:
     Type: String
@@ -33,7 +33,7 @@ Resources:
           - Sid: ''
             Effect: Allow
             Principal:
-              Service: lambda.amazonaws.com
+              Service: Lambda.amazonaws.com
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSLambdaExecute

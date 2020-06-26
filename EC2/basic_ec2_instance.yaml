@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Simple EC2 Instance'
+Description: 'Basic EC2 Instance'
 Parameters:
   VpcId:
     Description: Vpc to Attach instance.
@@ -35,7 +35,7 @@ Parameters:
     Type: Number
     Default: 50
     ConstraintDescription: Please choose a valid Number
-    AllowedValues: [20, 30, 40, 50]
+    AllowedValues: [20, 50, 100, 200]
     
   IOPS:
     Description: total ipos

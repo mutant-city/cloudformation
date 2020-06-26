@@ -7,7 +7,7 @@ rBasicLambdaRole:
           - Sid: ''
             Effect: Allow
             Principal:
-              Service: lambda.amazonaws.com
+              Service: Lambda.amazonaws.com
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSLambdaExecute
