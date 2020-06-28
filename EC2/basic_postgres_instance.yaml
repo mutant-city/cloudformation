@@ -116,9 +116,8 @@ Resources:
             systemctl status postgresql
 
             # add a user
-            su postgres
-            createuser -s -i -d -r -l -w ${DBUsername}
-            psql -c "ALTER ROLE ${DBUsername}  WITH PASSWORD '${DBPassword}';"
+            sudo -u postgres createuser -s -i -d -r -l -w ${DBUsername}
+            sudo -u postgres psql -c "ALTER ROLE ${DBUsername}  WITH PASSWORD '${DBPassword}';"
 
 
 
