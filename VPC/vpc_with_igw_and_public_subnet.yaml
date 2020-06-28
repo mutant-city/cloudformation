@@ -51,7 +51,7 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
   
-  # step 5 create a subnet
+  # step 5 create subnets.  (create two in different AZ's, required for things like RDS.)
   Subnet1:
     Type: AWS::EC2::Subnet
     DependsOn: PublicRoute1

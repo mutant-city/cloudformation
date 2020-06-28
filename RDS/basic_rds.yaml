@@ -1,11 +1,121 @@
----
-AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Basic RDS Service'
+# Notes:
+# This is not completed or tested and is still in progress and doesnt work!!
+# Instance types matter for databse version, see:
+#   https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html
 
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Description": "AWS CloudFormation Sample Template for creating an Amazon RDS DB instance:
+  Sample template showing how to create a DB instance with Enhanced Monitoring enabled.
+  **WARNING** This template creates an RDS DB instance. You will be billed for the AWS
+  resources used if you create a stack from this template.
 Parameters:
-  VpcId:
-    Description: Vpc to Attach RDS.
-    Type: AWS::EC2::VPC::Id
+  DBInstanceID:
+    Default: mydbinstance
+    Description: My database instance
+    Type: String
+    MinLength: '1'
+    MaxLength: '63'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: >-
+      Must begin with a letter and must not end with a hyphen or contain two
+      consecutive hyphens.
+  DBName:
+    Default: mydb
+    Description: My database
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: Must begin with a letter and contain only alphanumeric characters.
+  DBInstanceClass:
+    Description: DB instance class
+    Type: String
+    ConstraintDescription: Must select a valid DB instance type.
+    AllowedValues: [db.m1.small, db.m5.large]
+  DBVersion:
+    Description: DB Version
+    Type: String
+    ConstraintDescription: Must select a valid DB instance version.
+    AllowedValues: [9.6, 11.7]
+  DBAllocatedStorage:
+    Default: '50'
+    Description: The size of the database (GiB)
+    Type: Number
+    MinValue: '5'
+    MaxValue: '1024'
+    ConstraintDescription: must be between 20 and 65536 GiB.
+  DBUsername:
+    Description: Username for MySQL database access
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBPassword:
+    NoEcho: 'true'
+    Description: Password MySQL database access
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+  Subnet1:
+    Description: Subnet 1 to Attach cluster.
+    Type: AWS::EC2::Subnet::Id
+  Subnet2:
+    Description: Subnet 2 to Attach cluster.
+    Type: AWS::EC2::Subnet::Id
 
 
 Resources:
+  # attach the cluster to two subnets (2 required)
+  # This is basically an attachement resource that puts the cluster in the subnets.
+  DBSubnetAttachment:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Attach this cluster to subnets.
+      SubnetIds:
+        - !Ref Subnet1
+        - !Ref Subnet2
+
+  # This is required.
+  # This sets parameters inside of the database
+  # Some of the parameters take effect immediately, some require a reboot.
+  # Some apply to cluster, some apply to Instance.
+  # https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_WorkingWithParamGroups.html
+  # https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Reference.html#AuroraPostgreSQL.Reference.ParameterGroups
+  RDSDBClusterParameterGroup:
+    Type: AWS::RDS::DBClusterParameterGroup
+    Properties:
+      Description: "CloudFormation Sample Aurora Cluster Parameter Group"
+      Family: aurora-postgresql11
+      Parameters:
+        timezone: US/Eastern
+
+  # Creates a cluster which is basically a container for RDS instances
+  # Alot of management can configuration can be done here for the individual instances.
+  DatabaseCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-postgresql
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      BackupRetentionPeriod: 7
+      PreferredBackupWindow: 01:00-02:00
+      PreferredMaintenanceWindow: mon:03:00-mon:04:00
+      DBSubnetGroupName: !Ref DBSubnetAttachment
+      DBClusterParameterGroupName: !Ref RDSDBClusterParameterGroup
+
+  # Note how small this is as most everything is configured in the cluster.
+  RDSDBInstance1:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref DatabaseCluster
+      DBInstanceClass: !Ref DBInstanceClass
+      PubliclyAccessible: "true"
+      Engine: aurora-postgresql
+
+# Notes:
+# Instace
+

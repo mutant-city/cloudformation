@@ -1,0 +1,102 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Basic EC2 Instance'
+Parameters:
+  VpcId:
+    Description: Vpc to Attach instance.
+    Type: AWS::EC2::VPC::Id
+
+  SubnetId:
+    Description: Subnet to Attach instance.
+    Type: AWS::EC2::Subnet::Id
+
+  SSHKeyName:
+    Description: EC2 instance type
+    ConstraintDescription: Please choose a valid KeyName
+    Type: AWS::EC2::KeyPair::KeyName
+
+  ImageId:
+    Description: 'The AMI image Id for your region.'
+    Type: AWS::EC2::Image::Id
+
+  InstanceType:
+    Description: EC2 instance type
+    Default: t2.micro
+    AllowedValues: [t2.micro, t2.small, t2.medium, t2.large, m3.medium, m3.large,
+      m3.xlarge, m3.2xlarge, m4.large, m4.xlarge, m4.2xlarge, m4.4xlarge, m4.10xlarge,
+      c4.large, c4.xlarge, c4.2xlarge, c4.4xlarge, c4.8xlarge, c3.large, c3.xlarge,
+      c3.2xlarge, c3.4xlarge, c3.8xlarge, r3.large, r3.xlarge, r3.2xlarge, r3.4xlarge,
+      r3.8xlarge, i2.xlarge, i2.2xlarge, i2.4xlarge, i2.8xlarge]
+    ConstraintDescription: Please choose a valid instance type.
+    Type: String
+
+  VolumeSize:
+    Description: size of volume
+    Type: Number
+    Default: 50
+    ConstraintDescription: Please choose a valid Number
+    AllowedValues: [20, 50, 100, 200]
+
+  IOPS:
+    Description: total ipos
+    Type: Number
+    Default: 100
+    ConstraintDescription: Please choose a valid Number
+    AllowedValues: [100, 200, 500, 1000]
+
+Resources:
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: Allow ssh and postgres
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 0.0.0.0/0
+
+  EC2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      SubnetId: !Ref SubnetId
+      ImageId: !Ref ImageId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref SSHKeyName
+      SecurityGroupIds:
+        - !GetAtt InstanceSecurityGroup.GroupId
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeType: io1
+            Iops: !Ref IOPS
+            DeleteOnTermination: false
+            VolumeSize: !Ref VolumeSize
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash -xe
+          apt-get update
+          sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          apt-get update -y
+          apt-get install postgresql-12 -y
+          sed "s/.*listen_addresses.*/listen_addresses = '*'               # what addresses to listen on/" /etc/postgresql/12/main/postgresql.conf
+          echo "host    all             all              0.0.0.0/0              md5" >> /etc/postgresql/12/main/pg_hba.conf
+          echo "host    all             all              ::/0              md5" >> /etc/postgresql/12/main/pg_hba.conf
+          systemctl restart postgresql
+          # two commands to check status
+          pg_isready
+          systemctl status postgresql
+
+
+
+# to do
+# add iptables and/or ufw ???
+# resources:
+# https://blog.bigbinary.com/2016/01/23/configure-postgresql-to-allow-remote-connection.html
+# https://www.postgresql.org/download/linux/ubuntu/
