@@ -1,6 +1,9 @@
 # Notes:
-# This is not completed or tested and is still in progress and doesnt work!!
-# Instance types matter for databse version, see:
+# This is still in progress and doesnt work!!
+# RDS is expensive as hell!!
+# You can't use anything newer than pg 9.2 on a small instance and the large instances are $1k a month?
+# For hobby projects I switched to the EC2 postgres template so I could use postgres 12.
+# Instance types qnd engine version compatibility, see:
 #   https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html
 
 AWSTemplateFormatVersion: 2010-09-09
@@ -116,6 +119,4 @@ Resources:
       PubliclyAccessible: "true"
       Engine: aurora-postgresql
 
-# Notes:
-# Instace
 
