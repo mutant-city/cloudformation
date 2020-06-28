@@ -123,7 +123,7 @@ Resources:
 
 # to do
 # add iptables and/or ufw ???
-# password is in plaintext at /var/lib/cloud/instance/scripts due to userdata downloading the script, how to deal with?
+# user/password stored in plaintext at /var/lib/cloud/instance/scripts due to userdata downloading the script, how to deal with?
 
 # resources:
 # https://blog.bigbinary.com/2016/01/23/configure-postgresql-to-allow-remote-connection.html
