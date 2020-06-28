@@ -115,7 +115,7 @@ Resources:
             pg_isready
             systemctl status postgresql
 
-            # add a user
+            # add a user, postgres permissions run tandem to system permission hence the impersonation, it's weird but cool, google it.
             sudo -u postgres createuser -s -i -d -r -l -w ${DBUsername}
             sudo -u postgres psql -c "ALTER ROLE ${DBUsername}  WITH PASSWORD '${DBPassword}';"
 
