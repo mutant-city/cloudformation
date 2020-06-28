@@ -76,7 +76,7 @@ Resources:
           ToPort: 5432
           CidrIp: 0.0.0.0/0
 
-  EC2Instance:
+  PostgresInstance:
     Type: "AWS::EC2::Instance"
     Properties:
       SubnetId: !Ref SubnetId
