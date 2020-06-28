@@ -44,6 +44,21 @@ Parameters:
     ConstraintDescription: Please choose a valid Number
     AllowedValues: [100, 200, 500, 1000]
 
+  DBUsername:
+    Description: Username for MySQL database access
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+
+  DBPassword:
+    NoEcho: 'true'
+    Description: Password Postgres database access
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+
 Resources:
 
   InstanceSecurityGroup:
@@ -78,31 +93,39 @@ Resources:
             DeleteOnTermination: false
             VolumeSize: !Ref VolumeSize
       UserData:
-        Fn::Base64: |
-          #!/bin/bash -xe
-          apt-get update
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -xe
+            apt-get update
 
-          # get package source and key, install postgres
-          sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-          apt-get update -y
-          apt-get install postgresql-12 -y
+            # get package source and key, install postgres
+            sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+            wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+            apt-get update -y
+            apt-get install postgresql-12 -y
 
-          # configure postgres remote connections
-          sed -i "s/.*listen_addresses.*/listen_addresses = '*'/" /etc/postgresql/12/main/postgresql.conf
-          echo "host    all             all              0.0.0.0/0              md5" >> /etc/postgresql/12/main/pg_hba.conf
-          echo "host    all             all              ::/0              md5" >> /etc/postgresql/12/main/pg_hba.conf
-          systemctl restart postgresql
+            # configure postgres remote connections
+            sed -i "s/.*listen_addresses.*/listen_addresses = '*'/" /etc/postgresql/12/main/postgresql.conf
+            echo "host    all             all              0.0.0.0/0              md5" >> /etc/postgresql/12/main/pg_hba.conf
+            echo "host    all             all              ::/0              md5" >> /etc/postgresql/12/main/pg_hba.conf
+            systemctl restart postgresql
 
 
-          # two commands to check status
-          pg_isready
-          systemctl status postgresql
+            # two commands to check status
+            pg_isready
+            systemctl status postgresql
+
+            # add a user
+            su postgres
+            createuser -s -i -d -r -l -w ${DBUsername}
+            psql -c "ALTER ROLE ${DBUsername}  WITH PASSWORD '${DBPassword}';"
 
 
 
 # to do
 # add iptables and/or ufw ???
+# password is in plaintext at /var/lib/cloud/instance/scripts due to userdata downloading the script, how to deal with.
+
 # resources:
 # https://blog.bigbinary.com/2016/01/23/configure-postgresql-to-allow-remote-connection.html
 # https://www.postgresql.org/download/linux/ubuntu/
