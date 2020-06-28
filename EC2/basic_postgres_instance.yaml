@@ -81,14 +81,20 @@ Resources:
         Fn::Base64: |
           #!/bin/bash -xe
           apt-get update
+
+          # get package source and key, install postgres
           sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
           wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
           apt-get update -y
           apt-get install postgresql-12 -y
-          sed "s/.*listen_addresses.*/listen_addresses = '*'               # what addresses to listen on/" /etc/postgresql/12/main/postgresql.conf
+
+          # configure postgres remote connections
+          sed -i "s/.*listen_addresses.*/listen_addresses = '*'/" /etc/postgresql/12/main/postgresql.conf
           echo "host    all             all              0.0.0.0/0              md5" >> /etc/postgresql/12/main/pg_hba.conf
           echo "host    all             all              ::/0              md5" >> /etc/postgresql/12/main/pg_hba.conf
           systemctl restart postgresql
+
+
           # two commands to check status
           pg_isready
           systemctl status postgresql
