@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Basic ECR Repo.
+
+Parameters:
+  RepoName:
+    Description: Name of the ECR Repo
+    Type: String
+
+Resources:
+  EcrRepo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref RepoName

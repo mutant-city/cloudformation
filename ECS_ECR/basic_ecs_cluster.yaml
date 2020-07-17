@@ -1,0 +1,5 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Extremely simple creation of an ECS cluster. Not too many parameters for this'
+Resources:
+  MyCluster:
+    Type: 'AWS::ECS::Cluster'

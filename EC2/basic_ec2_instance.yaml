@@ -71,7 +71,7 @@ Resources:
           Ebs:
             VolumeType: io1
             Iops: !Ref IOPS
-            DeleteOnTermination: false
+            DeleteOnTermination: true
             VolumeSize: !Ref VolumeSize
           
           

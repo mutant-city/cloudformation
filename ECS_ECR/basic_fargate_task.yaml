@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Fargate Task Definition.
+Parameters:
+  Image:
+    Description: The ECR container image
+    Type: String
+
+Resources:
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: fargate-log-group
+
+ # A role needed by ECS
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: FargateTaskExecutionRole # string: change me
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+        -
+  # A role for the containers
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: FargateTaskTaskRold # string: change me
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+
+  TaskDefinition:
+      Type: AWS::ECS::TaskDefinition
+      DependsOn: LogGroup
+      Properties:
+        Family: fargate-task-definition # string value: Name of the task definition. Subsequent versions of the task definition are grouped together under this name.
+        NetworkMode: awsvpc # awsvpc is required for Fargate
+        RequiresCompatibilities: FARGATE
+        Cpu: 256 # see the allowed values in AWS docs
+        Memory: 0.5GB # see the allowed values in AWS docs
+        ContainerDefinitions:
+          - Name: MyFargateContainerDefintion # string value: edit here to change the name
+            Image: !Ref Image
+            PortMappings:
+              - ContainerPort: !Ref ContainerPort
+            LogConfiguration: # Send logs from containers to CloudWatch Logs
+              LogDriver: awslogs
+              Options:
+                awslogs-region: !Ref AWS::Region
+                awslogs-group: !Ref LogGroup
+                awslogs-stream-prefix: ecs
+        ExecutionRoleArn: !Ref ExecutionRole
+        TaskRoleArn: !Ref TaskRole
+
+# Notes:
+# ExecutionRoleArn: A role needed by ECS.
+#   "The ARN of the task execution role that containers in this task can assume. All containers in this task are granted the permissions that are specified in this role."
+#   "There is an optional task execution IAM role that you can specify with Fargate to allow your Fargate tasks to make API calls to Amazon ECR."
+
+#  TaskRoleArn:
+#     "The Amazon Resource Name (ARN) of an AWS Identity and Access Management (IAM) role that grants containers in the task permission to call AWS APIs on your behalf."

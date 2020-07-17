@@ -7,10 +7,6 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
   SubnetB:
     Type: AWS::EC2::Subnet::Id
-  Image:
-    Type: String
-    # Update with the Docker image. "You can use images in the Docker Hub registry or specify other repositories (repository-url/image:tag)."
-    Default: 123456789012.dkr.ecr.region.amazonaws.com/image:tag
   ServiceName:
     Type: String
     Default: MyService
