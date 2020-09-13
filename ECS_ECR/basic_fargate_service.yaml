@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Basic Fargate Service'
+
+Parameters:
+  FargateServiceName:
+    Description: 'Unique Name for this service, can be anything.'
+    Type: String
+
+  ClusterArn:
+    Description: 'The Arn of the cluster to deploy this service to'
+    Type: String
+
+  TaskDefinitionArn:
+    Description: 'The Arn of the task to use in this service'
+    Type: String
+
+  TemplateVPC:
+    Description: 'VPC to use'
+    Type: AWS::EC2::VPC::Id
+
+  SubnetA:
+    Description: 'First Subnet'
+    Type: AWS::EC2::Subnet::Id
+
+  SubnetB:
+    Description: 'Second Subnet'
+    Type: AWS::EC2::Subnet::Id
+
+  ContainerPort:
+      Description: 'The ports that the containers need'
+      Type: Number
+      Default: 80
+
+  LoadBalancerPort:
+    Description: 'The client facing port of the load balancer'
+    Type: Number
+    Default: 443
+
+  HealthCheckPath:
+    Description: 'The location that the HealthCheck should check with HTTP request, looks for a 200 response'
+    Type: String
+    Default: /
+
+  Certificate:
+    Description: Update with the certificate ARN from Certificate Manager, which must exist in the same region.
+    Type: String
+    Default: 'arn:aws:acm:region:123456789012:certificate/00000000-0000-0000-0000-000000000000'
+
+Resources:
+
+  ContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ContainerSecurityGroup
+      VpcId: !Ref TemplateVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref ContainerPort
+          ToPort: !Ref ContainerPort
+          SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: LoadBalancerSecurityGroup
+      VpcId: !Ref TemplateVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref LoadBalancerPort
+          ToPort: !Ref LoadBalancerPort
+          CidrIp: 0.0.0.0/0
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds # this is the default, but is specified here in case it needs to be changed
+          Value: 60
+      Name: !Sub '${FargateServiceName-${LoadBalancer}}'
+      Scheme: internet-facing     # "internal" is also an option
+      SecurityGroups:
+        - !Ref LoadBalancerSecurityGroup
+      Subnets:
+        - !Ref SubnetA
+        - !Ref SubnetB
+        -
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: !Ref HealthCheckPath # will look for a 200 status code by default unless specified otherwise
+      HealthCheckTimeoutSeconds: 5
+      UnhealthyThresholdCount: 2
+      HealthyThresholdCount: 2
+      Name: !Sub '${FargateServiceName}-${TargetGroup}'
+      Port: !Ref ContainerPort
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60 # default is 300
+      TargetType: ip
+      VpcId: !Ref TemplateVPC
+
+  ListenerHTTPS:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: !Ref LoadBalancerPort
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref Certificate
+
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn: # This dependency is needed so that the load balancer is setup correctly in time
+      - ListenerHTTPS
+    Properties:
+      ServiceName: !Ref FargateServiceName
+      Cluster: !Ref ClusterArn
+      TaskDefinition: !Ref TaskDefinitionArn
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+      DesiredCount: 2
+      HealthCheckGracePeriodSeconds: 30 # This may need to be adjusted if the container takes a while to start up
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED # change to DISABLED if you're using private subnets that have access to a NAT gateway
+          Subnets:
+            - !Ref SubnetA
+            - !Ref SubnetB
+          SecurityGroups:
+            - !Ref ContainerSecurityGroup
+      LoadBalancers:
+        - ContainerName: !Ref FargateServiceName
+          ContainerPort: !Ref ContainerPort
+          TargetGroupArn: !Ref TargetGroup
+
+
+
+
+

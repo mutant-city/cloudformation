@@ -15,7 +15,7 @@ Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/ecs/${AWS::Region}/${TaskName}'
+      LogGroupName: !Sub '/ecs/${TaskName}'
 
   TaskDefinition:
       Type: AWS::ECS::TaskDefinition
