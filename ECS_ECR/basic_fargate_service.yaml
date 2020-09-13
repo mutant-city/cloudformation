@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Basic Fargate Service'
 
 Parameters:
-  FargateServiceName:
+  TemplateServiceName:
     Description: 'Unique Name for this service, can be anything.'
     Type: String
 
@@ -11,8 +11,21 @@ Parameters:
     Type: String
 
   TaskDefinitionArn:
-    Description: 'The Arn of the task to use in this service'
+    Description: 'The family and revision (family:revision) or full ARN of the task definition to run in your service. The revision is required in order for the resource to stabilize.'
     Type: String
+
+  TargetGroupArn:
+    Description: 'The Arn of the target group to connect to'
+    Type: String
+
+  ContainerDefinitionName:
+    Description: 'The name of the container definition for the load balancer to use, its the name property of the container definition'
+    Type: String
+
+  ContainerPort:
+    Description: 'The ports that the containers need'
+    Type: Number
+    Default: 80
 
   TemplateVPC:
     Description: 'VPC to use'
@@ -26,28 +39,9 @@ Parameters:
     Description: 'Second Subnet'
     Type: AWS::EC2::Subnet::Id
 
-  ContainerPort:
-    Description: 'The ports that the containers need'
-    Type: Number
-    Default: 80
-
-  LoadBalancerPort:
-    Description: 'The client facing port of the load balancer'
-    Type: Number
-    Default: 443
-
-  HealthCheckPath:
-    Description: 'The location that the HealthCheck should check with HTTP request, looks for a 200 response'
-    Type: String
-    Default: /
-
-  Certificate:
-    Description: Update with the certificate ARN from Certificate Manager, which must exist in the same region.
-    Type: String
-    Default: 'arn:aws:acm:region:123456789012:certificate/00000000-0000-0000-0000-000000000000'
 
 Resources:
-
+  # FIX THIS
   ContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -57,68 +51,10 @@ Resources:
         - IpProtocol: tcp
           FromPort: !Ref ContainerPort
           ToPort: !Ref ContainerPort
-          SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
-
-  LoadBalancerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: LoadBalancerSecurityGroup
-      VpcId: !Ref TemplateVPC
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: !Ref LoadBalancerPort
-          ToPort: !Ref LoadBalancerPort
-          CidrIp: 0.0.0.0/0
-
-  LoadBalancer:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      LoadBalancerAttributes:
-        - Key: idle_timeout.timeout_seconds # this is the default, but is specified here in case it needs to be changed
-          Value: 60
-      Name: !Sub '${FargateServiceName-${LoadBalancer}}'
-      Scheme: internet-facing     # "internal" is also an option
-      SecurityGroups:
-        - !Ref LoadBalancerSecurityGroup
-      Subnets:
-        - !Ref SubnetA
-        - !Ref SubnetB
-
-  TargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      HealthCheckIntervalSeconds: 10
-      HealthCheckPath: !Ref HealthCheckPath # will look for a 200 status code by default unless specified otherwise
-      HealthCheckTimeoutSeconds: 5
-      UnhealthyThresholdCount: 2
-      HealthyThresholdCount: 2
-      Name: !Sub '${FargateServiceName}-${TargetGroup}'
-      Port: !Ref ContainerPort
-      Protocol: HTTP
-      TargetGroupAttributes:
-        - Key: deregistration_delay.timeout_seconds
-          Value: 60 # default is 300
-      TargetType: ip
-      VpcId: !Ref TemplateVPC
-
-  ListenerHTTPS:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      DefaultActions:
-        - TargetGroupArn: !Ref TargetGroup
-          Type: forward
-      LoadBalancerArn: !Ref LoadBalancer
-      Port: !Ref LoadBalancerPort
-      Protocol: HTTPS
-      Certificates:
-        - CertificateArn: !Ref Certificate
-
   Service:
     Type: AWS::ECS::Service
-    DependsOn: # This dependency is needed so that the load balancer is setup correctly in time
-      - ListenerHTTPS
     Properties:
-      ServiceName: !Ref FargateServiceName
+      ServiceName: !Ref TemplateServiceName
       Cluster: !Ref ClusterArn
       TaskDefinition: !Ref TaskDefinitionArn
       DeploymentConfiguration:
@@ -136,9 +72,9 @@ Resources:
           SecurityGroups:
             - !Ref ContainerSecurityGroup
       LoadBalancers:
-        - ContainerName: !Ref FargateServiceName
+        - ContainerName: !Ref ContainerDefinitionName
           ContainerPort: !Ref ContainerPort
-          TargetGroupArn: !Ref TargetGroup
+          TargetGroupArn: !Ref TargetGroupArn
 
 
 

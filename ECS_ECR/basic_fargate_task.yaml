@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Fargate Task Definition.
 Parameters:
-  TaskName:
+  TemplateTaskName:
     Description: The name of the instantiated ECRImage (Can be anything.)
     Type: String
   ECRImage:
@@ -15,7 +15,7 @@ Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub '/ecs/${TaskName}'
+      LogGroupName: !Sub '/ecs/${TemplateTaskName}'
 
   TaskDefinition:
       Type: AWS::ECS::TaskDefinition
@@ -28,7 +28,7 @@ Resources:
         Cpu: 256 # see the allowed values in AWS docs
         Memory: 512 # see the allowed values in AWS docs
         ContainerDefinitions:
-          - Name: !Sub '${TaskName}-${AWS::Region}'
+          - Name: !Ref TemplateTaskName
             Image: !Ref ECRImage
             PortMappings:
               - ContainerPort: 80
