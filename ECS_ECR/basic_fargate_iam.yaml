@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Fargate Task Definition.
+
+Resources:
+
+ # A role needed by ECS
+  FargateTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: FargateTaskExecutionRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+
+  # A role for the containers
+  FargateTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: FargateTaskTaskRoll # string: change me
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'

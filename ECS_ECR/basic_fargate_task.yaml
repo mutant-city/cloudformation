@@ -1,64 +1,45 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Fargate Task Definition.
 Parameters:
-  Image:
-    Description: The ECR container image
+  TaskName:
+    Description: The name of the instantiated ECRImage (Can be anything.)
+    Type: String
+  ECRImage:
+    Description: 'The ECR container image with url/name:tag Example: 219647033290.dkr.ecr.us-west-2.amazonaws.com/hello-world-ecr:latest'
+    Type: String
+  ExecutionRoleArn:
+    Description: The ARN of the Execution Role.
     Type: String
 
 Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: fargate-log-group
-
- # A role needed by ECS
-  ExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: FargateTaskExecutionRole # string: change me
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action: 'sts:AssumeRole'
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
-        -
-  # A role for the containers
-  TaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: FargateTaskTaskRold # string: change me
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action: 'sts:AssumeRole'
+      LogGroupName: !Sub '/ecs/${AWS::Region}/${TaskName}'
 
   TaskDefinition:
       Type: AWS::ECS::TaskDefinition
       DependsOn: LogGroup
       Properties:
-        Family: fargate-task-definition # string value: Name of the task definition. Subsequent versions of the task definition are grouped together under this name.
         NetworkMode: awsvpc # awsvpc is required for Fargate
-        RequiresCompatibilities: FARGATE
+        RequiresCompatibilities:
+          - FARGATE
+        ExecutionRoleArn: !Ref ExecutionRoleArn
         Cpu: 256 # see the allowed values in AWS docs
-        Memory: 0.5GB # see the allowed values in AWS docs
+        Memory: 512 # see the allowed values in AWS docs
         ContainerDefinitions:
-          - Name: MyFargateContainerDefintion # string value: edit here to change the name
-            Image: !Ref Image
+          - Name: !Sub '${TaskName}-${AWS::Region}'
+            Image: !Ref ECRImage
             PortMappings:
-              - ContainerPort: !Ref ContainerPort
-            LogConfiguration: # Send logs from containers to CloudWatch Logs
-              LogDriver: awslogs
-              Options:
+              - ContainerPort: 80
+            LogConfiguration:
+              logDriver: awslogs
+              options:
+                awslogs-group:  !Ref LogGroup
                 awslogs-region: !Ref AWS::Region
-                awslogs-group: !Ref LogGroup
                 awslogs-stream-prefix: ecs
-        ExecutionRoleArn: !Ref ExecutionRole
-        TaskRoleArn: !Ref TaskRole
+
+
 
 # Notes:
 # ExecutionRoleArn: A role needed by ECS.
