@@ -41,7 +41,6 @@ Parameters:
 
 
 Resources:
-  # FIX THIS
   ContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -51,6 +50,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: !Ref ContainerPort
           ToPort: !Ref ContainerPort
+          CidrIp: 0.0.0.0/0
   Service:
     Type: AWS::ECS::Service
     Properties:

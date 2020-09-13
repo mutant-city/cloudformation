@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-09
+WAWSTemplateFormatVersion: 2010-09-09
 # This CloudFormation template deploys a basic VPC with an attached/reachable IGW 
 # Any EC2 instance launched in the subnet is publicly accessible.
 
