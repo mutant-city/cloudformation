@@ -27,9 +27,9 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
 
   ContainerPort:
-      Description: 'The ports that the containers need'
-      Type: Number
-      Default: 80
+    Description: 'The ports that the containers need'
+    Type: Number
+    Default: 80
 
   LoadBalancerPort:
     Description: 'The client facing port of the load balancer'
@@ -83,7 +83,7 @@ Resources:
       Subnets:
         - !Ref SubnetA
         - !Ref SubnetB
-        -
+
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
